@@ -1,6 +1,6 @@
 const spacingDimensions = ["x", "y", "t", "b", "l", "r", "s", "e"];
 
-function getSpacingVariants(name, dimensions) {
+function getVariantNames(name, dimensions) {
   return dimensions.map((d) => `${name}${d}`);
 }
 
@@ -24,10 +24,44 @@ export const pseudoPlugins = {
     "dotted",
     "double",
   ]),
+  _backgroundAttachment: makePluginObject(["fixed", "local", "scroll"]),
+  _backgroundClip: makePluginObject(["border", "padding", "content", "text"]),
+  _backgroundOrigin: makePluginObject(["border", "padding", "content"]),
+  _backgroundPosition: makePluginObject([
+    "center",
+    "bottom",
+    "left",
+    "left-bottom",
+    "left-top",
+    "right",
+    "right-bottom",
+    "right-top",
+    "top",
+  ]),
+  _backgroundRepeat: makePluginObject([
+    "repeat",
+    "no-repeat",
+    "repeat-x",
+    "repeat-y",
+    "repeat-round",
+    "repeat-space",
+  ]),
+  _backgroundSize: makePluginObject(["auto", "cover", "contain"]),
+  _backgroundGradient: makePluginObject([
+    "none",
+    "gradient-to-t",
+    "gradient-to-tr",
+    "gradient-to-r",
+    "gradient-to-br",
+    "gradient-to-b",
+    "gradient-to-bl",
+    "gradient-to-l",
+    "gradient-to-tl",
+  ]),
 };
 
 export const pluginNamespaces = {
-  margin: ["m", ...getSpacingVariants("m", spacingDimensions)],
+  margin: ["m", ...getVariantNames("m", spacingDimensions)],
 
   borderWidth: ["border"],
   borderRadius: ["rounded"],
@@ -45,6 +79,17 @@ export const pluginNamespaces = {
   ringOffsetWidth: ["ring-offset"],
   ringOffsetColor: ["ring-offset"],
 
+  _backgroundAttachment: ["bg"],
+  _backgroundClip: ["bg"],
   backgroundColor: ["bg"],
-  borderSpacing: [...getSpacingVariants("border-spacing", ["", "x", "y"])],
+  backgroundOpacity: ["bg-opacity"],
+  _backgroundOrigin: ["bg-origin"],
+  _backgroundPosition: ["bg"],
+  _backgroundRepeat: ["bg"],
+  _backgroundGradient: ["bg"],
+
+  gradientColorStops: ["from", "via", "to"],
+  gradientColorStopPositions: ["from", "via", "to"],
+
+  borderSpacing: [...getVariantNames("border-spacing", ["", "x", "y"])],
 };

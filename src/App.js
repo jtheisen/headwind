@@ -149,7 +149,7 @@ const App = observer(function () {
       <div style={{ flexGrow: 1, display: "grid", placeItems: "center" }}>
         <div
           className={state.classItems.map((i) => i.cls).join(" ")}
-          style={{ width: "10rem", height: "10rem", background: "beige" }}
+          style={{ width: "10rem", height: "10rem" }}
         >
           {state.value}
         </div>
