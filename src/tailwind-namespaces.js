@@ -4,8 +4,13 @@ function getSpacingVariants(name, dimensions) {
   return dimensions.map((d) => `${name}${d}`);
 }
 
-const pseudoPlugins = {
-  _borderStyle: ["solid", "dashed", "dotted", "double", "hidden", "none"],
+export const pseudoPlugins = {
+  _borderStyle: Object.fromEntries(
+    ["solid", "dashed", "dotted", "double", "hidden", "none"].map((i) => [
+      i,
+      "DUMMY",
+    ])
+  ),
 };
 
 export const pluginNamespaces = {

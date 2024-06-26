@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
-import { Button, ButtonGroup } from "@blueprintjs/core";
+import { Button, ButtonGroup, SegmentedControl } from "@blueprintjs/core";
 import { Download } from "@blueprintjs/icons";
 import { makeObservable, action, runInAction } from "mobx";
 import { useLocalObservable, observer } from "mobx-react-lite";
@@ -18,9 +18,9 @@ function makeClassItem(plugin, ns, value, cls) {
   return { plugin, ns, value, cls };
 }
 
-function findClassItem(classItems, ns) {
+function findClassItem(classItems, ns, plugin) {
   if (!ns) return -1;
-  return classItems.findIndex((i) => i.ns === ns);
+  return classItems.findIndex((i) => i.ns === ns && i.plugin === plugin);
 }
 
 function useEditorState() {
@@ -29,6 +29,7 @@ function useEditorState() {
   const state = useLocalObservable(() => ({
     characters: [],
     classItems: [],
+    preferredPluginForNs: {},
 
     get charactersAsString() {
       return this.characters.join("");
@@ -40,18 +41,45 @@ function useEditorState() {
       const c = this.candidateNs;
       if (!c) return undefined;
       const cas = this.charactersAsString;
-      console.info(cas);
       return c.slice(cas.length);
     },
+    get currentPlugins() {
+      const ns = state.candidateNs;
 
+      if (!ns) return;
+
+      const plugins = tw.getPluginsForNamespace(ns);
+
+      return plugins;
+    },
+    get currentPlugin() {
+      const plugins = this.currentPlugins;
+
+      if (!plugins) return;
+
+      let plugin = this.preferredPluginForNs[this.candidateNs];
+
+      if (!plugin || !plugins.includes(plugin)) {
+        plugin = plugins[0];
+      }
+
+      return plugin;
+    },
+    set currentPlugin(v) {
+      this.preferredPluginForNs[this.candidateNs] = v;
+    },
     get value() {
-      const i = findClassItem(this.classItems, this.candidateNs);
+      const i = findClassItem(
+        this.classItems,
+        this.candidateNs,
+        this.currentPlugin
+      );
       return i < 0 ? undefined : this.classItems[i].value;
     },
     set value(v) {
       const ns = this.candidateNs;
       if (!ns) return undefined;
-      const i = findClassItem(this.classItems, ns);
+      const i = findClassItem(this.classItems, ns, this.currentPlugin);
       if (i < 0) {
         const cls = tw.getClassName(ns, v);
         const plugin = tw.getPluginForClass(cls);
@@ -80,15 +108,7 @@ function useEditorState() {
   });
 
   useEvent("wheel", function (e) {
-    const ns = state.candidateNs;
-
-    if (!ns) return;
-
-    const plugins = tw.getPluginsForNamespace(ns);
-
-    if (!plugins) return;
-
-    const plugin = plugins[0];
+    let plugin = state.currentPlugin;
 
     if (!plugin) return;
 
@@ -118,12 +138,13 @@ function useEditorState() {
 const App = observer(function () {
   const [dummy, setDummy] = useState(0);
 
-  const state = useEditorState();
+  const state = (window.state = useEditorState());
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh" }}>
-      <div>
+      <div style={{ display: "flex" }}>
         <KeyView state={state} />
+        <PluginSelector state={state} />
       </div>
       <div style={{ flexGrow: 1, display: "grid", placeItems: "center" }}>
         <div
@@ -149,6 +170,18 @@ const App = observer(function () {
 });
 
 export default App;
+
+const PluginSelector = observer(function ({ state }) {
+  const plugins = state.currentPlugins;
+  if (!plugins || plugins.length === 0) return false;
+  return (
+    <SegmentedControl
+      value={state.currentPlugin}
+      onValueChange={action((v) => (state.currentPlugin = v))}
+      options={plugins.map((p) => ({ label: p, value: p }))}
+    />
+  );
+});
 
 const KeyView = observer(function ({ state }) {
   return (

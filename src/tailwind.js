@@ -1,5 +1,5 @@
 import resolveConfig from "tailwindcss/resolveConfig";
-import { pluginNamespaces } from "./tailwind-namespaces";
+import { pluginNamespaces, pseudoPlugins } from "./tailwind-namespaces";
 
 const fullConfig = resolveConfig({});
 
@@ -44,10 +44,10 @@ function addFlattenedPluginValues(result, prefix, values) {
 function getFlattenedPluginValues(plugin) {
   const result = {};
 
-  const root = fullConfig.theme[plugin];
+  const config = fullConfig.theme[plugin] ?? pseudoPlugins[plugin];
 
-  if (root) {
-    addFlattenedPluginValues(result, undefined, fullConfig.theme[plugin]);
+  if (config) {
+    addFlattenedPluginValues(result, undefined, config);
   }
 
   return result;
@@ -78,6 +78,7 @@ for (const plugin in pluginNamespaces) {
 
 const tailwindDiagnosticVariable = {
   fullConfig,
+  pluginToValues,
   haveClassAmbiguity,
   namespacesToPluginMapping,
   ambiguousClassNamespaces,
