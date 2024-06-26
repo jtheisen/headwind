@@ -4,22 +4,47 @@ function getSpacingVariants(name, dimensions) {
   return dimensions.map((d) => `${name}${d}`);
 }
 
+function makePluginObject(list) {
+  return Object.fromEntries(list.map((i) => [i, "DUMMY"]));
+}
+
 export const pseudoPlugins = {
-  _borderStyle: Object.fromEntries(
-    ["solid", "dashed", "dotted", "double", "hidden", "none"].map((i) => [
-      i,
-      "DUMMY",
-    ])
-  ),
+  _borderStyle: makePluginObject([
+    "solid",
+    "dashed",
+    "dotted",
+    "double",
+    "hidden",
+    "none",
+  ]),
+  _outlineStyle: makePluginObject([
+    "none",
+    "DEFAULT",
+    "dashed",
+    "dotted",
+    "double",
+  ]),
 };
 
 export const pluginNamespaces = {
   margin: ["m", ...getSpacingVariants("m", spacingDimensions)],
+
   borderWidth: ["border"],
   borderRadius: ["rounded"],
-  // borderStyle missing (hard-coded)
-  _borderStyle: ["border"],
   borderColor: ["border"],
+  borderOpacity: ["border-opacity"],
+  _borderStyle: ["border"],
+
+  outlineWidth: ["outline"],
+  _outlineStyle: ["outline"],
+  outlineOffset: ["outline-offset"],
+
+  ringWidth: ["ring"],
+  ringColor: ["ring"],
+  ringOpacity: ["ring-opacity"],
+  ringOffsetWidth: ["ring-offset"],
+  ringOffsetColor: ["ring-offset"],
+
   backgroundColor: ["bg"],
   borderSpacing: [...getSpacingVariants("border-spacing", ["", "x", "y"])],
 };
