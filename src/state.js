@@ -1,11 +1,10 @@
 /* eslint-disable no-restricted-globals */
 
-import { Button, ButtonGroup, SegmentedControl } from "@blueprintjs/core";
-import { Download } from "@blueprintjs/icons";
-import { makeObservable, action, runInAction } from "mobx";
-import { useLocalObservable, observer } from "mobx-react-lite";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { action, runInAction } from "mobx";
+import { useLocalObservable } from "mobx-react-lite";
+import { createContext, useEffect, useMemo } from "react";
 import { createTailwind } from "./tailwind";
+import { makeTreeFromNode } from "./nodes";
 
 function useEvent(name, handler) {
   useEffect(() => {
@@ -23,13 +22,27 @@ function findClassItem(classItems, ns, plugin) {
   return classItems.findIndex((i) => i.ns === ns && i.plugin === plugin);
 }
 
-function useEditorState() {
+export const StateContext = createContext();
+
+const initialDoc = `
+<main>
+  <div>
+  </div>
+</main>
+`;
+
+const parser = new DOMParser();
+
+const parsedInitialDoc = parser.parseFromString(initialDoc, "text/html");
+window.parsedInitialDoc = parsedInitialDoc;
+export function useEditorState() {
   const tw = useMemo(createTailwind);
 
   const state = useLocalObservable(() => ({
     characters: [],
     classItems: [],
     preferredPluginForNs: {},
+    tree: makeTreeFromNode(parsedInitialDoc),
 
     get charactersAsString() {
       return this.characters.join("");
@@ -134,60 +147,3 @@ function useEditorState() {
 
   return state;
 }
-
-const App = observer(function () {
-  const [dummy, setDummy] = useState(0);
-
-  const state = (window.state = useEditorState());
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh" }}>
-      <div style={{ display: "flex" }}>
-        <KeyView state={state} />
-        <PluginSelector state={state} />
-      </div>
-      <div style={{ flexGrow: 1, display: "grid", placeItems: "center" }}>
-        <div
-          className={state.classItems.map((i) => i.cls).join(" ")}
-          style={{ width: "10rem", height: "10rem" }}
-        >
-          {state.value}
-        </div>
-      </div>
-      <ButtonGroup>
-        <Button
-          icon={<Download size={16} />}
-          onClick={() => setDummy(dummy + 1)}
-        ></Button>
-        <Button icon={<Download size={16} />}></Button>
-        <Button icon={<i className="fas fa-check" />}></Button>
-        <Button icon={<i className="fas fa-align-left" />}></Button>
-        <Button icon={<i className="fas fa-align-center" />}></Button>
-        <Button icon={<i className="fas fa-align-right" />}></Button>
-      </ButtonGroup>
-    </div>
-  );
-});
-
-export default App;
-
-const PluginSelector = observer(function ({ state }) {
-  const plugins = state.currentPlugins;
-  if (!plugins || plugins.length === 0) return false;
-  return (
-    <SegmentedControl
-      value={state.currentPlugin}
-      onValueChange={action((v) => (state.currentPlugin = v))}
-      options={plugins.map((p) => ({ label: p, value: p }))}
-    />
-  );
-});
-
-const KeyView = observer(function ({ state }) {
-  return (
-    <div>
-      <span className="font-bold">{state.charactersAsString}</span>
-      <span className="font-bold opacity-50">{state.suffixToCandidateNs}</span>
-    </div>
-  );
-});
