@@ -11,6 +11,20 @@ import { Observer, observer } from "mobx-react-lite";
 import { useContext, useMemo, useState } from "react";
 import { useEditorState, StateContext } from "./state";
 import { Outline } from "./Outline";
+import { sampleTree } from "./tree-state2";
+
+const TestOutline = observer(function ({ node }) {
+  return (
+    <div>
+      <div>{node.id}</div>
+      {node.children.map((n) => (
+        <div onClick={() => n.addChild()}>
+          <TestOutline node={n} />
+        </div>
+      ))}
+    </div>
+  );
+});
 
 const App = observer(function () {
   const [dummy, setDummy] = useState(0);
@@ -19,7 +33,8 @@ const App = observer(function () {
 
   return (
     <StateContext.Provider value={state}>
-      <Outline />
+      <TestOutline node={sampleTree.root} />
+      {/* <Outline /> */}
       <div
         style={{ display: "flex", flexDirection: "column", height: "100dvh" }}
       >
