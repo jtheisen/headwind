@@ -11,7 +11,7 @@ import { Observer, observer } from "mobx-react-lite";
 import { useContext, useMemo, useState } from "react";
 import { useEditorState, StateContext } from "./state";
 import { Outline } from "./Outline";
-import { sampleTree } from "./tree-state2";
+import { sampleTree } from "./tree-state";
 
 const TestOutline = observer(function ({ node }) {
   return (
