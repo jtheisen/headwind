@@ -31,7 +31,7 @@ export function getItemsForTreeControl(root) {
       index: node.id,
       children: node.children ? node.children.map((c) => c.id) : undefined,
       data: node,
-      isFolder: !!node.children,
+      isFolder: !!node.children && node.children.length > 0,
     };
     if (node.children) {
       for (const n of node.children) {
@@ -41,6 +41,14 @@ export function getItemsForTreeControl(root) {
   }
 
   collect(root);
+
+  let rootId = Object.keys(result)[0];
+
+  result["root"] = {
+    index: "root",
+    children: [rootId],
+    isFolder: true,
+  };
 
   return result;
 }
@@ -54,9 +62,7 @@ export const Outline = observer(function () {
   const [expandedItems, setExpandedItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
 
-  let items = getItemsForTreeControl(state.tree);
-
-  let rootId = Object.keys(items)[0];
+  let items = getItemsForTreeControl(state.treeRef.value);
 
   //logValueTemporarily(JSON.stringify(items), "items");
 
@@ -64,7 +70,7 @@ export const Outline = observer(function () {
     <div>
       <ControlledTreeEnvironment
         items={items}
-        getItemTitle={(i) => i.data.tagName}
+        getItemTitle={(i) => i.data.label}
         viewState={{
           "tree-1": {
             focusedItem,
@@ -86,7 +92,7 @@ export const Outline = observer(function () {
         onSelectItems={(items) => setSelectedItems(items)}
         {...renderers}
       >
-        <Tree treeId="tree-1" rootItem={rootId} treeLabel="Tree Example" />
+        <Tree treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
     </div>
   );
