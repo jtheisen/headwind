@@ -1,15 +1,25 @@
 import { types } from "mobx-state-tree";
 
+// index: "root",
+// canMove: true,
+// isFolder: true,
+// children: ["child1"],
+// data: "Root item",
+// canRename: true,
+
 export const Node = types
   .model({
-    id: types.identifier,
+    index: types.identifier,
+    canMove: false,
+    isFolder: true,
+    data: "some item",
     isSelected: false,
     tree: types.reference(types.late(() => Tree)),
     children: types.array(types.reference(types.late(() => Node))),
   })
   .actions((self) => ({
     addChild() {
-      self.tree.createNode((newNode) => self.children.push(newNode.id));
+      self.tree.createNode((newNode) => self.children.push(newNode.index));
     },
     setIsSelected(v) {
       self.isSelected = v;
@@ -18,7 +28,7 @@ export const Node = types
 
 export const Tree = types
   .model({
-    id: types.identifier,
+    index: types.identifier,
     latestId: types.number,
     nodes: types.map(Node),
     root: types.reference(Node),
@@ -27,7 +37,7 @@ export const Tree = types
     createNode(insert) {
       const newId = (++self.latestId).toString();
       const newNode = {
-        id: newId,
+        index: newId,
         isSelected: false,
         tree: self,
       };
@@ -38,22 +48,22 @@ export const Tree = types
   }));
 
 export const sampleTree = Tree.create({
-  id: "tree",
+  index: "tree",
   latestId: 3,
   nodes: {
     1: {
-      id: "1",
+      index: "1",
       tree: "tree",
       isSelected: false,
       children: ["2", "3"],
     },
     2: {
-      id: "2",
+      index: "2",
       tree: "tree",
       isSelected: false,
     },
     3: {
-      id: "3",
+      index: "3",
       tree: "tree",
       isSelected: false,
     },
@@ -62,5 +72,20 @@ export const sampleTree = Tree.create({
 });
 
 window.sampleTree = sampleTree;
-
 console.info(sampleTree);
+
+// export function makeTreeFromNode(node) {
+//   switch (node.nodeType) {
+//     case Node.DOCUMENT_NODE:
+//       return makeTreeFromNode(node.children[0]);
+//     case Node.ELEMENT_NODE:
+//       return new OElement(
+//         node.tagName,
+//         [...node.childNodes].map(makeTreeFromNode)
+//       );
+//     case Node.TEXT_NODE:
+//       return new OText(node.textContent);
+//     default:
+//       return new OUnknown();
+//   }
+// }

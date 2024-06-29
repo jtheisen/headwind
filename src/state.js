@@ -4,7 +4,7 @@ import { action, runInAction } from "mobx";
 import { useLocalObservable } from "mobx-react-lite";
 import { createContext, useEffect, useMemo } from "react";
 import { createTailwind } from "./tailwind";
-import { makeTreeFromNode } from "./nodes";
+import { makeTreeFromNode } from "./tree-state2";
 
 function useEvent(name, handler) {
   useEffect(() => {
@@ -35,6 +35,7 @@ const parser = new DOMParser();
 
 const parsedInitialDoc = parser.parseFromString(initialDoc, "text/html");
 window.parsedInitialDoc = parsedInitialDoc;
+
 export function useEditorState() {
   const tw = useMemo(createTailwind);
 
