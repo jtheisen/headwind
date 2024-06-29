@@ -11,6 +11,8 @@ import { Observer, observer } from "mobx-react-lite";
 import { useContext, useMemo, useState } from "react";
 import { useEditorState, StateContext } from "./state";
 import { Outline } from "./Outline";
+import { Allotment } from "allotment";
+import { Artboard } from "./Artboard";
 
 const TestOutline = observer(function ({ node }) {
   return (
@@ -33,22 +35,33 @@ const App = observer(function () {
   return (
     <StateContext.Provider value={state}>
       {/* <TestOutline node={sampleTree.root} /> */}
-      <Outline />
-      <div
+      <Allotment vertical={false}>
+        <Allotment.Pane preferredSize={200}>
+          <Outline />
+        </Allotment.Pane>
+        <Allotment.Pane>
+          <div
+            style={{ display: "flex", flexDirection: "column", height: "100%" }}
+          >
+            <div style={{ display: "flex" }}>
+              <KeyView state={state} />
+              <PluginSelector state={state} />
+            </div>
+            <div style={{ flexGrow: 1, display: "grid", placeItems: "center" }}>
+              <Artboard />
+              {/* <div
+                className={state.classItems.map((i) => i.cls).join(" ")}
+                style={{ width: "10rem", height: "10rem" }}
+              >
+                {state.value}
+              </div> */}
+            </div>
+          </div>
+        </Allotment.Pane>
+      </Allotment>
+      {/* <div
         style={{ display: "flex", flexDirection: "column", height: "100dvh" }}
       >
-        <div style={{ display: "flex" }}>
-          <KeyView state={state} />
-          <PluginSelector state={state} />
-        </div>
-        <div style={{ flexGrow: 1, display: "grid", placeItems: "center" }}>
-          <div
-            className={state.classItems.map((i) => i.cls).join(" ")}
-            style={{ width: "10rem", height: "10rem" }}
-          >
-            {state.value}
-          </div>
-        </div>
         <ButtonGroup>
           <Button
             icon={<Download size={16} />}
@@ -60,7 +73,7 @@ const App = observer(function () {
           <Button icon={<i className="fas fa-align-center" />}></Button>
           <Button icon={<i className="fas fa-align-right" />}></Button>
         </ButtonGroup>
-      </div>
+      </div> */}
     </StateContext.Provider>
   );
 });

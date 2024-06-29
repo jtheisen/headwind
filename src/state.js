@@ -4,8 +4,8 @@ import { action, runInAction } from "mobx";
 import { useLocalObservable } from "mobx-react-lite";
 import { createContext, useEffect, useMemo } from "react";
 import { createTailwind } from "./tailwind";
-import { makeTreeFromNode } from "./tree-state2";
-import { MobxRef, logValueTemporarily } from "./utils";
+import { makeDocumentStateFromNode, makeTreeFromNode } from "./tree-state2";
+import { logValueTemporarily } from "./utils";
 
 function useEvent(name, handler) {
   useEffect(() => {
@@ -41,7 +41,7 @@ const parser = new DOMParser();
 const parsedInitialDoc = parser.parseFromString(initialDoc, "text/xml");
 window.parsedInitialDoc = parsedInitialDoc;
 
-const tree = logValueTemporarily(makeTreeFromNode(parsedInitialDoc), "tree");
+//const tree = logValueTemporarily(makeTreeFromNode(parsedInitialDoc), "tree");
 
 export function useEditorState() {
   const tw = useMemo(createTailwind);
@@ -50,7 +50,7 @@ export function useEditorState() {
     characters: [],
     classItems: [],
     preferredPluginForNs: {},
-    treeRef: new MobxRef(tree),
+    document: makeDocumentStateFromNode(parsedInitialDoc),
 
     get charactersAsString() {
       return this.characters.join("");

@@ -1,12 +1,14 @@
+import { observable } from "mobx";
 import { types } from "mobx-state-tree";
 
 export const TreeNode = types
   .model("TreeNode", {
     id: types.identifier,
+    id2: types.string,
     type: types.string,
     nodeType: types.number,
     tagName: types.optional(types.string, ""),
-    text: types.optional(types.string, ""),
+    textContent: types.optional(types.string, ""),
     children: types.array(types.late(() => TreeNode)),
   })
   .views((self) => ({
@@ -15,7 +17,7 @@ export const TreeNode = types
         case Node.ELEMENT_NODE:
           return self.tagName;
         case Node.TEXT_NODE:
-          return `"${self.text}"`;
+          return `"${self.textContent}"`;
         default:
           return "?" + self.nodeType;
       }
@@ -37,13 +39,34 @@ export const TreeNode = types
   }));
 
 export const Tree = types.model({
+  latestId: types.number,
   root: TreeNode,
 });
 
 let latestId = 0;
 
-function getNextId() {
-  return (++latestId).toString();
+function getCorePropsForNode(node) {
+  const nextId = (++latestId).toString();
+  return {
+    id: nextId,
+    id2: nextId,
+    nodeType: node.nodeType,
+  };
+}
+
+export function makeDocumentStateFromNode(node) {
+  console.error(`Made doc from ${latestId}`);
+  const root = makeTreeFromNode(node);
+  return makeDocumentStateFromTreeRoot(root, latestId);
+}
+
+function makeDocumentStateFromTreeRoot(treeRoot, latestId) {
+  return {
+    tree: Tree.create({ root: treeRoot, latestId }),
+    focusedNode: [],
+    selectedNodes: [],
+    expandedNodes: [],
+  };
 }
 
 export function makeTreeFromNode(node) {
@@ -60,8 +83,7 @@ function makeTreeFromNodeTemplate(node) {
       return makeTreeFromNode(node.children[0]);
     case Node.ELEMENT_NODE:
       return {
-        id: getNextId(),
-        nodeType: node.nodeType,
+        ...getCorePropsForNode(node),
         type: "ELEMENT",
         tagName: node.tagName,
         children: [...node.childNodes].map(makeTreeFromNode).filter((n) => n),
@@ -70,15 +92,13 @@ function makeTreeFromNodeTemplate(node) {
       if (!node.textContent || node.textContent.trim() === "") return undefined;
 
       return {
-        id: getNextId(),
-        nodeType: node.nodeType,
+        ...getCorePropsForNode(node),
         type: "TEXT",
-        text: node.textContent.trim(),
+        textContent: node.textContent.trim(),
       };
     default:
       return {
-        id: getNextId(),
-        nodeType: node.nodeType,
+        ...getCorePropsForNode(node),
         type: "UNKNOWN",
       };
   }

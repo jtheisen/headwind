@@ -1,9 +1,13 @@
 import { observer } from "mobx-react-lite";
 import { useContext, useState } from "react";
-import { ControlledTreeEnvironment, Tree } from "react-complex-tree";
+import {
+  ControlledTreeEnvironment,
+  InteractionMode,
+  Tree,
+} from "react-complex-tree";
 import { StateContext } from "./state";
 import { renderers as bpRenderers } from "react-complex-tree-blueprintjs-renderers";
-import { observable } from "mobx";
+import { action, observable } from "mobx";
 import { logValueTemporarily } from "./utils";
 import { Classes } from "@blueprintjs/core";
 
@@ -58,38 +62,34 @@ console.info(bpRenderers);
 export const Outline = observer(function () {
   const state = useContext(StateContext);
 
-  const [focusedItem, setFocusedItem] = useState();
-  const [expandedItems, setExpandedItems] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
+  let items = getItemsForTreeControl(state.document.tree.root);
 
-  let items = getItemsForTreeControl(state.treeRef.value);
-
-  //logValueTemporarily(JSON.stringify(items), "items");
+  const doc = state.document;
 
   return (
     <div>
       <ControlledTreeEnvironment
         items={items}
         getItemTitle={(i) => i.data.label}
+        defaultInteractionMode={InteractionMode.DoubleClickItemToExpand}
         viewState={{
           "tree-1": {
-            focusedItem,
-            expandedItems,
-            selectedItems,
+            focusedItem: doc.focusedNode,
+            expandedItems: doc.expandedNodes,
+            selectedItems: doc.selectedNodes,
           },
         }}
-        onFocusItem={(item) => setFocusedItem(item.index)}
-        onExpandItem={(item) =>
-          setExpandedItems([...expandedItems, item.index])
-        }
-        onCollapseItem={(item) =>
-          setExpandedItems(
-            expandedItems.filter(
-              (expandedItemIndex) => expandedItemIndex !== item.index
-            )
-          )
-        }
-        onSelectItems={(items) => setSelectedItems(items)}
+        onFocusItem={action((item) => (doc.focusedNode = item.index))}
+        onExpandItem={action(
+          (item) => (doc.expandedNodes = [...doc.expandedNodes, item.index])
+        )}
+        onCollapseItem={action(
+          (item) =>
+            (doc.expandedNodes = doc.expandedNodes.filter(
+              (id) => id !== item.index
+            ))
+        )}
+        onSelectItems={action((items) => (doc.selectedNodes = items))}
         {...renderers}
       >
         <Tree treeId="tree-1" rootItem="root" treeLabel="Tree Example" />

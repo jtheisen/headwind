@@ -1,11 +1,13 @@
-export function logValueTemporarily(value, name = "temp") {
-  console.info({ [name]: value, json: JSON.parse(JSON.stringify(value)) });
-  window[name] = value;
-  return value;
+function stringifyAndParse(o) {
+  try {
+    return JSON.parse(JSON.stringify(o));
+  } catch (ex) {
+    return "[exception]";
+  }
 }
 
-export class MobxRef {
-  constructor(value) {
-    this.value = value;
-  }
+export function logValueTemporarily(value, name = "temp") {
+  console.info({ [name]: value, json: stringifyAndParse(value) });
+  window[name] = value;
+  return value;
 }
