@@ -4,6 +4,7 @@ import { createElement, useContext } from "react";
 import clsx from "clsx";
 import { logValueTemporarily } from "./utils";
 import { ErrorBoundary } from "react-error-boundary";
+import { action } from "mobx";
 
 const ArtboardNode = observer(function ({ node }) {
   const state = useContext(StateContext);
@@ -18,8 +19,29 @@ const ArtboardNode = observer(function ({ node }) {
 
       const elementProps = {
         ...node.attributes.toJSON(),
+        key: node.id,
         className: node.classes.map((c) => c.cls).join(" "),
-        style: isSelected ? { background: "red" } : undefined,
+        style:
+          isSelected || doc.hoveredNode === node.id
+            ? { background: "red" }
+            : undefined,
+
+        onMouseOver: action((e) => {
+          console.info("over");
+          e.stopPropagation();
+          doc.hoveredNode = node.id;
+        }),
+
+        onMouseLeave: action((e) => {
+          if (doc.hoveredNode === node.id) {
+            doc.hoveredNode = undefined;
+          }
+        }),
+
+        onClick: action((e) => {
+          e.stopPropagation();
+          doc.setSelectedNode(node);
+        }),
       };
 
       const children = hasChildren

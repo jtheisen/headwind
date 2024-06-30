@@ -1,6 +1,13 @@
 import { observable } from "mobx";
-import { types } from "mobx-state-tree";
+import {
+  types,
+  getParent,
+  getParentOfType,
+  hasParentOfType,
+  resolveIdentifier,
+} from "mobx-state-tree";
 import { convertAttributeNameFromDomToReact } from "./dom";
+import { logValueTemporarily } from "./utils";
 
 export const ClassNode = types
   .model({
@@ -10,11 +17,16 @@ export const ClassNode = types
     cls: types.string,
     hasValue: types.boolean,
   })
+  .actions((self) => ({
+    setClass(cls) {
+      self.cls = cls;
+    },
+  }))
   .views((self) => ({
     get value() {
       if (!self.tailwind)
         throw Error(`Can't get value from non-tailwind class`);
-      return self.cls.substring(0, self.ns.length + 1);
+      return self.cls.substring(self.ns.length + 1);
     },
     set value(v) {
       if (!self.tailwind) throw Error(`Can't set value for non-tailwind class`);
@@ -46,8 +58,16 @@ export const TreeNode = types
           return "?" + self.nodeType;
       }
     },
+    get parent() {
+      if (!hasParentOfType(self, TreeNode)) return undefined;
+
+      return getParentOfType(self, TreeNode);
+    },
   }))
   .actions((self) => ({
+    addTailwindClass({ plugin, ns, cls }) {
+      self.classes.push({ tailwind: true, hasValue: true, plugin, ns, cls });
+    },
     addChild() {
       self.children.push({
         id: "x",
@@ -62,10 +82,16 @@ export const TreeNode = types
     },
   }));
 
-export const Tree = types.model({
-  latestId: types.number,
-  root: TreeNode,
-});
+export const Tree = types
+  .model({
+    latestId: types.number,
+    root: TreeNode,
+  })
+  .views((self) => ({
+    findById(id) {
+      return resolveIdentifier(TreeNode, self, id);
+    },
+  }));
 
 export function createDocumentFactory(resolveClass) {
   let latestId = 0;
@@ -87,9 +113,27 @@ export function createDocumentFactory(resolveClass) {
   function makeDocumentStateFromTreeRoot(treeRoot, latestId) {
     return {
       tree: Tree.create({ root: treeRoot, latestId }),
-      focusedNode: [],
+      focusedNode: undefined,
       selectedNodes: [],
       expandedNodes: [],
+      hoveredNode: undefined,
+
+      getAncestors(node) {
+        const result = [];
+
+        while (node) {
+          result.push(node);
+          node = node.parent;
+        }
+
+        return result;
+      },
+
+      setSelectedNode(node) {
+        this.selectedNodes = [node.id];
+
+        this.expandedNodes = this.getAncestors(node).map((n) => n.id);
+      },
     };
   }
 

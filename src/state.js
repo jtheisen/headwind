@@ -4,7 +4,7 @@ import { action, runInAction } from "mobx";
 import { useLocalObservable } from "mobx-react-lite";
 import { createContext, useEffect, useMemo } from "react";
 import { createTailwind } from "./tailwind";
-import { createDocumentFactory } from "./tree-state2";
+import { createDocumentFactory } from "./tree-state";
 import { logValueTemporarily, parseDocument } from "./utils";
 import { tailwindPlaygroundSampleHtml } from "./sampleDocuments";
 
@@ -34,14 +34,22 @@ export function useEditorState() {
   const state = useLocalObservable(() => {
     const documentFactory = createDocumentFactory(tw.getClassModelForClass);
 
-    const doc = documentFactory.makeDocumentStateFromNode(parsedInitialDoc);
+    const initialStateDocument =
+      documentFactory.makeDocumentStateFromNode(parsedInitialDoc);
 
     return {
       characters: [],
-      classItems: [],
       preferredPluginForNs: {},
-      document: doc,
+      document: initialStateDocument,
 
+      get firstSelectedNode() {
+        const doc = this.document;
+        if (!doc.selectedNodes) return undefined;
+        const firstId = doc.selectedNodes[0];
+        if (!firstId) return undefined;
+        const first = doc.tree.findById(firstId);
+        return first;
+      },
       get charactersAsString() {
         return this.characters.join("");
       },
@@ -80,29 +88,27 @@ export function useEditorState() {
         this.preferredPluginForNs[this.candidateNs] = v;
       },
       get value() {
-        const i = findClassItem(
-          this.classItems,
-          this.candidateNs,
-          this.currentPlugin
-        );
-        return i < 0 ? undefined : this.classItems[i].value;
+        if (!this.firstSelectedNode) return undefined;
+        const classes = this.firstSelectedNode.classes;
+        const i = findClassItem(classes, this.candidateNs, this.currentPlugin);
+        logValueTemporarily(classes[i], "cls");
+        return i < 0 ? undefined : classes[i].value;
       },
       set value(v) {
         const ns = this.candidateNs;
-        if (!ns) return undefined;
-        const i = findClassItem(this.classItems, ns, this.currentPlugin);
+        if (!ns || !this.firstSelectedNode) return undefined;
+        const i = findClassItem(
+          this.firstSelectedNode.classes,
+          ns,
+          this.currentPlugin
+        );
         if (i < 0) {
           const cls = tw.getClassName(ns, v);
           const plugin = tw.getPluginForClass(cls);
-          runInAction(() =>
-            this.classItems.push({ plugin, ns, value: v, cls })
-          );
+          this.firstSelectedNode.addTailwindClass({ plugin, ns, cls });
         } else {
-          const ci = this.classItems[i];
-          runInAction(() => {
-            ci.value = v;
-            ci.cls = tw.getClassName(ns, v);
-          });
+          const ci = this.firstSelectedNode.classes[i];
+          ci.setClass(tw.getClassName(ns, v));
         }
       },
     };

@@ -36,7 +36,7 @@ const App = observer(function () {
     <StateContext.Provider value={state}>
       {/* <TestOutline node={sampleTree.root} /> */}
       <Allotment vertical={false}>
-        <Allotment.Pane preferredSize={200}>
+        <Allotment.Pane preferredSize={300} minSize={100} snap={true}>
           <Outline />
         </Allotment.Pane>
         <Allotment.Pane>
