@@ -37,9 +37,13 @@ const ArtboardNode = observer(function ({ node }) {
 export const Artboard = observer(function () {
   const state = useContext(StateContext);
 
+  const root = state.document.tree.root;
+
   return (
     <ErrorBoundary>
-      <ArtboardNode node={state.document.tree.root} />
+      {root.children.map((n) => (
+        <ArtboardNode key={n.id} node={n} />
+      ))}
     </ErrorBoundary>
   );
 });

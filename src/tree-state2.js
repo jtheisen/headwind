@@ -80,7 +80,6 @@ export function createDocumentFactory(resolveClass) {
   }
 
   function makeDocumentStateFromNode(node) {
-    console.error(`Made doc from ${latestId}`);
     const root = makeTreeFromNode(node);
     return makeDocumentStateFromTreeRoot(root, latestId);
   }

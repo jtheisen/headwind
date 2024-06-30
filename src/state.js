@@ -36,8 +36,6 @@ export function useEditorState() {
 
     const doc = documentFactory.makeDocumentStateFromNode(parsedInitialDoc);
 
-    logValueTemporarily(doc, "doc");
-
     return {
       characters: [],
       classItems: [],
