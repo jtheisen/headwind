@@ -1,5 +1,6 @@
 import resolveConfig from "tailwindcss/resolveConfig";
 import { pluginNamespaces, pseudoPlugins } from "./tailwind-namespaces";
+import { logValueTemporarily } from "./utils";
 
 const fullConfig = resolveConfig({});
 
@@ -125,6 +126,23 @@ export function createTailwind() {
     },
     getValuesForPlugin(plugin) {
       return pluginToValues[plugin];
+    },
+    getClassModelForClass(cls) {
+      const plugin = classPlugins[cls];
+      const ns = classNamespaces[cls];
+      const tailwind = !!(plugin && ns);
+
+      const values = pluginToValues[plugin];
+      const value = tailwind && cls.substring(0, ns.length + 1);
+      const hasValue = !!(values && values[value]);
+
+      return {
+        tailwind,
+        plugin,
+        ns,
+        cls,
+        hasValue,
+      };
     },
   };
 }

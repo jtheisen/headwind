@@ -27,7 +27,7 @@ export const renderers = {
   ),
 };
 
-export function getItemsForTreeControl(root) {
+export function getItemsForTreeControl(root, insertDummyRoot) {
   const result = {};
 
   function collect(node) {
@@ -48,26 +48,29 @@ export function getItemsForTreeControl(root) {
 
   let rootId = Object.keys(result)[0];
 
-  result["root"] = {
-    index: "root",
-    children: [rootId],
-    isFolder: true,
-  };
+  if (insertDummyRoot) {
+    result["root"] = {
+      index: "root",
+      children: [rootId],
+      isFolder: true,
+    };
+    rootId = "root";
+  }
 
-  return result;
+  return [result, rootId];
 }
 
-console.info(bpRenderers);
+//console.info(bpRenderers);
 
 export const Outline = observer(function () {
   const state = useContext(StateContext);
 
-  let items = getItemsForTreeControl(state.document.tree.root);
+  let [items, rootId] = getItemsForTreeControl(state.document.tree.root, false);
 
   const doc = state.document;
 
   return (
-    <div>
+    <div style={{ overflow: "auto", height: "100%" }}>
       <ControlledTreeEnvironment
         items={items}
         getItemTitle={(i) => i.data.label}
@@ -92,7 +95,7 @@ export const Outline = observer(function () {
         onSelectItems={action((items) => (doc.selectedNodes = items))}
         {...renderers}
       >
-        <Tree treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
+        <Tree treeId="tree-1" rootItem={rootId} treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
     </div>
   );
