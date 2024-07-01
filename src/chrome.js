@@ -14,6 +14,7 @@ import { Outline } from "./Outline";
 import { Allotment } from "allotment";
 import { Artboard } from "./Artboard";
 import { Properties } from "./Properties";
+import { SourceEditor } from "./SourceEditor";
 
 const TestOutline = observer(function ({ node }) {
   return (
@@ -36,48 +37,46 @@ const App = observer(function () {
   return (
     <StateContext.Provider value={state}>
       {/* <TestOutline node={sampleTree.root} /> */}
-      <Allotment vertical={false}>
-        <Allotment.Pane preferredSize={300} minSize={100} snap={true}>
-          <Outline />
-        </Allotment.Pane>
+      <Allotment vertical={true}>
         <Allotment.Pane>
-          <div
-            style={{ display: "flex", flexDirection: "column", height: "100%" }}
-          >
-            <div style={{ display: "flex" }}>
-              <KeyView state={state} />
-              <PluginSelector state={state} />
-            </div>
-            <div style={{ flexGrow: 1, display: "grid", placeItems: "center" }}>
-              <Artboard />
-              {/* <div
+          <Allotment vertical={false}>
+            <Allotment.Pane preferredSize={300} minSize={100} snap={true}>
+              <Outline />
+            </Allotment.Pane>
+            <Allotment.Pane>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                }}
+              >
+                <div style={{ display: "flex" }}>
+                  <KeyView state={state} />
+                  <PluginSelector state={state} />
+                </div>
+                <div
+                  style={{ flexGrow: 1, display: "grid", placeItems: "center" }}
+                >
+                  <Artboard />
+                  {/* <div
                 className={state.classItems.map((i) => i.cls).join(" ")}
                 style={{ width: "10rem", height: "10rem" }}
               >
                 {state.value}
               </div> */}
-            </div>
-          </div>
+                </div>
+              </div>
+            </Allotment.Pane>
+            <Allotment.Pane preferredSize={300} minSize={100} snap={true}>
+              <Properties />
+            </Allotment.Pane>
+          </Allotment>
         </Allotment.Pane>
         <Allotment.Pane preferredSize={300} minSize={100} snap={true}>
-          <Properties />
+          <SourceEditor />
         </Allotment.Pane>
       </Allotment>
-      {/* <div
-        style={{ display: "flex", flexDirection: "column", height: "100dvh" }}
-      >
-        <ButtonGroup>
-          <Button
-            icon={<Download size={16} />}
-            onClick={() => setDummy(dummy + 1)}
-          ></Button>
-          <Button icon={<Download size={16} />}></Button>
-          <Button icon={<i className="fas fa-check" />}></Button>
-          <Button icon={<i className="fas fa-align-left" />}></Button>
-          <Button icon={<i className="fas fa-align-center" />}></Button>
-          <Button icon={<i className="fas fa-align-right" />}></Button>
-        </ButtonGroup>
-      </div> */}
     </StateContext.Provider>
   );
 });
