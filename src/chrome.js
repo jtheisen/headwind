@@ -13,6 +13,7 @@ import { useEditorState, StateContext } from "./state";
 import { Outline } from "./Outline";
 import { Allotment } from "allotment";
 import { Artboard } from "./Artboard";
+import { Properties } from "./Properties";
 
 const TestOutline = observer(function ({ node }) {
   return (
@@ -57,6 +58,9 @@ const App = observer(function () {
               </div> */}
             </div>
           </div>
+        </Allotment.Pane>
+        <Allotment.Pane preferredSize={300} minSize={100} snap={true}>
+          <Properties />
         </Allotment.Pane>
       </Allotment>
       {/* <div
