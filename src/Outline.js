@@ -65,9 +65,9 @@ export function getItemsForTreeControl(root, insertDummyRoot) {
 export const Outline = observer(function () {
   const state = useContext(StateContext);
 
-  let [items, rootId] = getItemsForTreeControl(state.document.tree.root, false);
+  let [items, rootId] = getItemsForTreeControl(state.doc.tree.root, false);
 
-  const doc = state.document;
+  const doc = state.doc;
 
   return (
     <div style={{ overflow: "auto", height: "100%" }}>

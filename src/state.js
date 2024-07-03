@@ -40,10 +40,10 @@ export function useEditorState() {
     return {
       characters: [],
       preferredPluginForNs: {},
-      document: initialStateDocument,
+      doc: initialStateDocument,
 
       get firstSelectedNode() {
-        const doc = this.document;
+        const doc = this.doc;
         if (!doc.selectedNodes) return undefined;
         const firstId = doc.selectedNodes[0];
         if (!firstId) return undefined;

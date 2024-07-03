@@ -51,7 +51,8 @@ const App = observer(function () {
                   height: "100%",
                 }}
               >
-                <div style={{ display: "flex" }}>
+                <div style={{ display: "flex", minHeight: 36 }}>
+                  &nbsp;
                   <KeyView state={state} />
                   <PluginSelector state={state} />
                 </div>
@@ -73,7 +74,12 @@ const App = observer(function () {
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>
-        <Allotment.Pane preferredSize={300} minSize={100} snap={true}>
+        <Allotment.Pane
+          preferredSize={300}
+          minSize={100}
+          snap={true}
+          visible={false}
+        >
           <SourceEditor />
         </Allotment.Pane>
       </Allotment>

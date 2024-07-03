@@ -18,12 +18,15 @@ code {
 
 .class-tag-list {
   display: flex;
+  flex-wrap: wrap;
   gap: .25rem;
 }
 
 .class-tag {
   border-radius: 2px;
   padding: 2px 4px;
+
+  white-space: nowrap;
 
   font-weight: bold;
 }

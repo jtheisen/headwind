@@ -1,15 +1,24 @@
-import { observer } from "mobx-react-lite";
+import { observer, useLocalObservable } from "mobx-react-lite";
 import { StateContext, useEditorState } from "./state";
-import { createElement, useContext } from "react";
+import {
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import clsx from "clsx";
 import { logValueTemporarily } from "./utils";
 import { ErrorBoundary } from "react-error-boundary";
 import { action } from "mobx";
+import useResizeObserver from "@react-hook/resize-observer";
 
-const ArtboardNode = observer(function ({ node }) {
+const ArtboardNode = observer(function ({ node, registerElement }) {
   const state = useContext(StateContext);
 
-  const doc = state.document;
+  const doc = state.doc;
 
   switch (node.nodeType) {
     case Node.ELEMENT_NODE:
@@ -20,14 +29,11 @@ const ArtboardNode = observer(function ({ node }) {
       const elementProps = {
         ...node.attributes.toJSON(),
         key: node.id,
+        ref: (r) => registerElement(node.id, r),
         className: node.classes.map((c) => c.cls).join(" "),
-        style:
-          isSelected || doc.hoveredNode === node.id
-            ? { background: "red" }
-            : undefined,
+        style: isSelected ? { background: "red" } : undefined,
 
         onMouseOver: action((e) => {
-          console.info("over");
           e.stopPropagation();
           doc.hoveredNode = node.id;
         }),
@@ -45,7 +51,13 @@ const ArtboardNode = observer(function ({ node }) {
       };
 
       const children = hasChildren
-        ? node.children.map((n) => <ArtboardNode key={n.id} node={n} />)
+        ? node.children.map((n) => (
+            <ArtboardNode
+              key={n.id}
+              node={n}
+              registerElement={registerElement}
+            />
+          ))
         : undefined;
 
       return createElement(node.tagName, elementProps, children);
@@ -56,16 +68,128 @@ const ArtboardNode = observer(function ({ node }) {
   }
 });
 
-export const Artboard = observer(function () {
+function OverlayNode({ refs, node, rootBcr }) {
+  const element = refs[node.id];
+
+  return (
+    <section>
+      {element &&
+        [...element.getClientRects()].map((r, i) => {
+          const { top, left, width, height } = r;
+          const { x, y } = rootBcr;
+          return (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: left - x,
+                top: top - y,
+                width,
+                height,
+              }}
+            />
+          );
+        })}
+      <>
+        {node.children &&
+          node.children.map((n) => (
+            <OverlayNode key={n.id} {...{ refs, rootBcr }} node={n} />
+          ))}
+      </>
+    </section>
+  );
+}
+
+const ArtboardInteractionOverlay = observer(function ({
+  doc,
+  refs,
+  selectionOverlayState,
+  hideOverlay,
+}) {
+  const ref = useRef();
+
+  const rootBcr = ref.current?.getBoundingClientRect();
+
+  return (
+    <div
+      ref={ref}
+      name="overlay"
+      key="overlay"
+      style={{
+        pointerEvents: "none",
+        position: "absolute",
+        inset: 0,
+      }}
+    >
+      {selectionOverlayState.renderCount && (
+        <div
+          style={{
+            pointerEvents: !hideOverlay ? "all" : undefined,
+            width: "100%",
+            height: "100%",
+            display: hideOverlay ? "none" : undefined,
+          }}
+        >
+          <OverlayNode {...{ refs, rootBcr }} node={doc.tree.root} />
+        </div>
+      )}
+    </div>
+  );
+});
+
+let refCount = 0;
+
+export const Artboard = observer(function Artboard() {
   const state = useContext(StateContext);
 
-  const root = state.document.tree.root;
+  const hideOverlay = state.characters.length === 0;
+
+  const refs = useMemo(() => ({ count: ++refCount }), []);
+
+  const selectionOverlayState = useLocalObservable(() => ({ renderCount: 0 }));
+
+  const rerenderOverlay = action(() => {
+    ++selectionOverlayState.renderCount;
+    return () => {};
+  });
+
+  const resizeObserver = useMemo(() => new ResizeObserver(rerenderOverlay), []);
+
+  const registerElement = useCallback((id, element) => {
+    if (element) {
+      resizeObserver.observe(element);
+      refs[id] = element;
+    } else {
+      resizeObserver.unobserve(refs[id]);
+      delete refs[id];
+    }
+  }, []);
+
+  const doc = state.doc;
+
+  const tree = doc.tree;
+
+  const root = tree.root;
 
   return (
     <ErrorBoundary>
-      {root.children.map((n) => (
-        <ArtboardNode key={n.id} node={n} />
-      ))}
+      <div style={{ position: "relative" }}>
+        <div name="root-nodes" key="root-nodes">
+          {root.children.map((n) => (
+            <ArtboardNode
+              key={n.id}
+              node={n}
+              registerElement={registerElement}
+            />
+          ))}
+        </div>
+        <ArtboardInteractionOverlay
+          doc={doc}
+          refs={refs}
+          selectionOverlayState={selectionOverlayState}
+          hideOverlay={hideOverlay}
+        />
+      </div>
     </ErrorBoundary>
   );
 });

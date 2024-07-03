@@ -23,7 +23,7 @@ const ClassList = observer(function () {
   return (
     <div className="class-tag-list">
       {firstSelectedNode.classes.map((c) => (
-        <ClassItem classItem={c} />
+        <ClassItem key={c.cls} classItem={c} />
       ))}
     </div>
   );
