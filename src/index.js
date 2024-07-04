@@ -6,6 +6,9 @@ import "./index.css";
 import "allotment/dist/style.css";
 import App from "./chrome";
 import reportWebVitals from "./reportWebVitals";
+import { FocusStyleManager } from "@blueprintjs/core";
+
+FocusStyleManager.onlyShowFocusOnTabs();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);

@@ -22,8 +22,6 @@ const ArtboardNode = observer(function ({ node, registerElement }) {
 
   switch (node.nodeType) {
     case Node.ELEMENT_NODE:
-      const isSelected = doc.selectedNodes.indexOf(node.id) >= 0;
-
       const hasChildren = node.children && node.children.length > 0;
 
       const elementProps = {
@@ -31,23 +29,17 @@ const ArtboardNode = observer(function ({ node, registerElement }) {
         key: node.id,
         ref: (r) => registerElement(node.id, r),
         className: node.classes.map((c) => c.cls).join(" "),
-        style: isSelected ? { background: "red" } : undefined,
 
-        onMouseOver: action((e) => {
-          e.stopPropagation();
-          doc.hoveredNode = node.id;
-        }),
+        // onMouseOver: action((e) => {
+        //   e.stopPropagation();
+        //   doc.hoveredNode = node.id;
+        // }),
 
-        onMouseLeave: action((e) => {
-          if (doc.hoveredNode === node.id) {
-            doc.hoveredNode = undefined;
-          }
-        }),
-
-        onClick: action((e) => {
-          e.stopPropagation();
-          doc.setSelectedNode(node);
-        }),
+        // onMouseLeave: action((e) => {
+        //   if (doc.hoveredNode === node.id) {
+        //     doc.hoveredNode = undefined;
+        //   }
+        // }),
       };
 
       const children = hasChildren
@@ -68,36 +60,82 @@ const ArtboardNode = observer(function ({ node, registerElement }) {
   }
 });
 
-function OverlayNode({ refs, node, rootBcr }) {
-  const element = refs[node.id];
+// function OverlayNode({ refs, node, rootBcr }) {
+//   const element = refs[node.id];
 
-  return (
-    <section>
-      {element &&
-        [...element.getClientRects()].map((r, i) => {
-          const { top, left, width, height } = r;
-          const { x, y } = rootBcr;
-          return (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                left: left - x,
-                top: top - y,
-                width,
-                height,
-              }}
-            />
-          );
-        })}
-      <>
-        {node.children &&
-          node.children.map((n) => (
-            <OverlayNode key={n.id} {...{ refs, rootBcr }} node={n} />
-          ))}
-      </>
-    </section>
-  );
+//   if (!element) return false;
+
+//   return (
+//     <section>
+//       {[...element.getClientRects()].map((r, i) => {
+//         const { top, left, width, height } = r;
+//         const { x, y } = rootBcr;
+//         return (
+//           <div
+//             key={i}
+//             style={{
+//               position: "absolute",
+//               left: left - x,
+//               top: top - y,
+//               width,
+//               height,
+//             }}
+//           />
+//         );
+//       })}
+//     </section>
+//   );
+// }
+
+function getOverlayNodes(refs, doc, rootBcr) {
+  const result = [];
+
+  const { tree, selectedNodes } = doc;
+
+  function collectOverlayNodes(node) {
+    const element = refs[node.id];
+
+    if (element) {
+      result.push(
+        <section
+          key={node.id}
+          className={clsx({ selected: selectedNodes.includes(node.id) })}
+        >
+          {[...element.getClientRects()].map((r, i) => {
+            const { top, left, width, height } = r;
+            const { x, y } = rootBcr;
+
+            return (
+              <div
+                key={i}
+                style={{
+                  position: "absolute",
+                  left: left - x,
+                  top: top - y,
+                  width,
+                  height,
+                }}
+                onClick={action((e) => {
+                  e.stopPropagation();
+                  doc.setSelectedNode(node);
+                })}
+              />
+            );
+          })}
+        </section>
+      );
+    }
+
+    if (!node.children) return;
+
+    for (const n of node.children) {
+      collectOverlayNodes(n);
+    }
+  }
+
+  collectOverlayNodes(tree.root);
+
+  return result;
 }
 
 const ArtboardInteractionOverlay = observer(function ({
@@ -123,6 +161,7 @@ const ArtboardInteractionOverlay = observer(function ({
     >
       {selectionOverlayState.renderCount && (
         <div
+          className="interaction-overlay"
           style={{
             pointerEvents: !hideOverlay ? "all" : undefined,
             width: "100%",
@@ -130,7 +169,7 @@ const ArtboardInteractionOverlay = observer(function ({
             display: hideOverlay ? "none" : undefined,
           }}
         >
-          <OverlayNode {...{ refs, rootBcr }} node={doc.tree.root} />
+          {getOverlayNodes(refs, doc, rootBcr)}
         </div>
       )}
     </div>

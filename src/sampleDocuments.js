@@ -50,3 +50,9 @@ export const tailwindPlaygroundSampleHtml = `
   </div>
 </div>
 `;
+
+export const sizingSample = `
+<div class="mx-auto max-w-lg max-h-screen">
+  <div class="m-4 p-4 border-4"></div>
+</div>
+`;

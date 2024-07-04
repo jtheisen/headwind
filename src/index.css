@@ -5,6 +5,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --hover-color: color-mix(in srgb, gray, transparent 95%);
+  --selection-color: #0076E5;
+  --box-color-content: #8CB6C0;
+  --box-color-padding: #C3D08B;
+  --box-color-border: #FDDD9B;
+  --box-color-margin: #F9CC9D;
 }
 
 code {
@@ -15,6 +22,22 @@ code {
 #root {
   height: 100dvh;
 }
+
+/* interaction overlay */
+
+.interaction-overlay section:hover > div {
+  background: var(--hover-color);
+}
+
+.interaction-overlay section.selected > div {
+  background: color-mix(in srgb, var(--selection-color), transparent 75%);
+}
+
+.interaction-overlay div {
+  background: transparent;
+}
+
+/* class tags */
 
 .class-tag-list {
   display: flex;

@@ -15,10 +15,6 @@ function useEvent(name, handler) {
   }, []);
 }
 
-function makeClassItem(plugin, ns, value, cls) {
-  return { plugin, ns, value, cls };
-}
-
 function findClassItem(classItems, ns, plugin) {
   if (!ns) return -1;
   return classItems.findIndex((i) => i.ns === ns && i.plugin === plugin);
