@@ -62,7 +62,7 @@ export function getItemsForTreeControl(root, insertDummyRoot) {
 
 //console.info(bpRenderers);
 
-export const Outline = observer(function () {
+export const Outline = observer(function Outline() {
   const state = useContext(StateContext);
 
   let [items, rootId] = getItemsForTreeControl(state.doc.tree.root, false);

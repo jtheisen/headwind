@@ -4,14 +4,17 @@ import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 import "./index.css";
 import "allotment/dist/style.css";
-import App from "./chrome";
+import Chrome from "./chrome";
 import reportWebVitals from "./reportWebVitals";
 import { FocusStyleManager } from "@blueprintjs/core";
+import { trim } from "lodash";
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
+const path = trim(new URL(window.location).pathname, "/");
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+root.render(<Chrome path={path} />);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

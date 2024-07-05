@@ -29,10 +29,8 @@ const TestOutline = observer(function ({ node }) {
   );
 });
 
-const App = observer(function () {
-  const [dummy, setDummy] = useState(0);
-
-  const state = (window.state = useEditorState());
+const Chrome = observer(function Chrome({ path }) {
+  const state = (window.state = useEditorState(path));
 
   return (
     <StateContext.Provider value={state}>
@@ -51,11 +49,7 @@ const App = observer(function () {
                   height: "100%",
                 }}
               >
-                <div style={{ display: "flex", minHeight: 36 }}>
-                  &nbsp;
-                  <KeyView state={state} />
-                  <PluginSelector state={state} />
-                </div>
+                <TopBar state={state} />
                 <div
                   style={{ flexGrow: 1, display: "grid", placeItems: "center" }}
                 >
@@ -87,9 +81,22 @@ const App = observer(function () {
   );
 });
 
-export default App;
+export default Chrome;
 
-const PluginSelector = observer(function ({ state }) {
+function TopBar({ state }) {
+  return (
+    <div
+      className="window-border"
+      style={{ display: "flex", minHeight: 36, borderBottomWidth: 1 }}
+    >
+      &nbsp;
+      <KeyView state={state} />
+      <PluginSelector state={state} />
+    </div>
+  );
+}
+
+const PluginSelector = observer(function PluginSelector({ state }) {
   const plugins = state.currentPlugins;
   if (!plugins || plugins.length === 0) return false;
   return (
@@ -101,7 +108,7 @@ const PluginSelector = observer(function ({ state }) {
   );
 });
 
-const KeyView = observer(function ({ state }) {
+const KeyView = observer(function KeyView({ state }) {
   return (
     <div>
       <span className="font-bold">{state.charactersAsString}</span>

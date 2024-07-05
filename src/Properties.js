@@ -29,7 +29,7 @@ const ClassList = observer(function () {
   );
 });
 
-export const Properties = observer(function () {
+export const Properties = observer(function Properties() {
   const state = useContext(StateContext);
 
   return (

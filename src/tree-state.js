@@ -1,10 +1,13 @@
-import { observable } from "mobx";
+import { action, observable, runInAction } from "mobx";
 import {
   types,
   getParent,
   getParentOfType,
   hasParentOfType,
   resolveIdentifier,
+  onSnapshot,
+  onPatch,
+  addMiddleware,
 } from "mobx-state-tree";
 import { convertAttributeNameFromDomToReact } from "./dom";
 import { logValueTemporarily } from "./utils";
@@ -68,6 +71,11 @@ export const TreeNode = types
     addTailwindClass({ plugin, ns, cls }) {
       self.classes.push({ tailwind: true, hasValue: true, plugin, ns, cls });
     },
+    removeClass(classItem) {
+      const i = self.classes.indexOf(classItem);
+      if (i < 0) throw Error(`Class not found`);
+      self.classes.splice(i, 1);
+    },
     addChild() {
       self.children.push({
         id: "x",
@@ -111,8 +119,9 @@ export function createDocumentFactory(resolveClass) {
   }
 
   function makeDocumentStateFromTreeRoot(treeRoot, latestId) {
-    return {
+    const result = observable({
       tree: Tree.create({ root: treeRoot, latestId }),
+      updateCount: 0,
       focusedNode: undefined,
       selectedNodes: [],
       expandedNodes: [],
@@ -134,7 +143,15 @@ export function createDocumentFactory(resolveClass) {
 
         this.expandedNodes = this.getAncestors(node).map((n) => n.id);
       },
-    };
+    });
+
+    function updateObservationHandler(call, next, abort) {
+      runInAction(() => ++result.updateCount);
+      next(call, (v) => v);
+    }
+    addMiddleware(result.tree, updateObservationHandler);
+
+    return result;
   }
 
   function makeTreeFromNode(node) {
@@ -150,7 +167,7 @@ export function createDocumentFactory(resolveClass) {
       case Node.DOCUMENT_NODE:
         return makeTreeFromNode(node.children[0]);
       case Node.ELEMENT_NODE:
-        const style = node.attributes.style;
+        const style = node.attributes.style; // FIXME
         return {
           ...getCorePropsForNode(node),
           type: "ELEMENT",

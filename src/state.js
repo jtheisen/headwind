@@ -6,7 +6,7 @@ import { createContext, useEffect, useMemo } from "react";
 import { createTailwind } from "./tailwind";
 import { createDocumentFactory } from "./tree-state";
 import { logValueTemporarily, parseDocument } from "./utils";
-import { tailwindPlaygroundSampleHtml } from "./sampleDocuments";
+import { sampleDocs } from "./sampleDocuments";
 
 function useEvent(name, handler) {
   useEffect(() => {
@@ -22,12 +22,14 @@ function findClassItem(classItems, ns, plugin) {
 
 export const StateContext = createContext();
 
-const parsedInitialDoc = parseDocument(tailwindPlaygroundSampleHtml);
-
-export function useEditorState() {
+export function useEditorState(path) {
   const tw = useMemo(createTailwind);
 
   const state = useLocalObservable(() => {
+    const sampleDocHtml = sampleDocs[path] ?? sampleDocs.tailwind;
+
+    const parsedInitialDoc = parseDocument(sampleDocHtml);
+
     const documentFactory = createDocumentFactory(tw.getClassModelForClass);
 
     const initialStateDocument =
@@ -37,6 +39,7 @@ export function useEditorState() {
       characters: [],
       preferredPluginForNs: {},
       doc: initialStateDocument,
+      docHtmlRef: undefined,
 
       get firstSelectedNode() {
         const doc = this.doc;
@@ -99,12 +102,17 @@ export function useEditorState() {
           this.currentPlugin
         );
         if (i < 0) {
+          if (!v) return;
           const cls = tw.getClassName(ns, v);
           const plugin = tw.getPluginForClass(cls);
           this.firstSelectedNode.addTailwindClass({ plugin, ns, cls });
         } else {
           const ci = this.firstSelectedNode.classes[i];
-          ci.setClass(tw.getClassName(ns, v));
+          if (v) {
+            ci.setClass(tw.getClassName(ns, v));
+          } else {
+            this.firstSelectedNode.removeClass(ci);
+          }
         }
       },
     };
@@ -135,7 +143,7 @@ export function useEditorState() {
       return;
     }
 
-    const values = Object.keys(pluginValuesObject);
+    const values = [undefined, ...Object.keys(pluginValuesObject)];
 
     const i = values.indexOf(state.value);
 

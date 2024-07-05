@@ -6,6 +6,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  --window-border-color: #D3D3D3;
+
   --hover-color: color-mix(in srgb, gray, transparent 95%);
   --selection-color: #0076E5;
   --box-color-content: #8CB6C0;
@@ -21,6 +23,12 @@ code {
 
 #root {
   height: 100dvh;
+}
+
+/* manual window borders */
+
+.window-border {
+  border: 0px solid var(--window-border-color);
 }
 
 /* interaction overlay */

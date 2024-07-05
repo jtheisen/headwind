@@ -54,7 +54,7 @@ const ArtboardNode = observer(function ({ node, registerElement }) {
 
       return createElement(node.tagName, elementProps, children);
     case Node.TEXT_NODE:
-      return node.textContent;
+      return " " + node.textContent;
     default:
       return `?${node.nodeType}?`;
   }
@@ -213,7 +213,11 @@ export const Artboard = observer(function Artboard() {
   return (
     <ErrorBoundary>
       <div style={{ position: "relative" }}>
-        <div name="root-nodes" key="root-nodes">
+        <div
+          name="root-nodes"
+          key="root-nodes"
+          ref={action((e) => (state.docHtmlRef = e))}
+        >
           {root.children.map((n) => (
             <ArtboardNode
               key={n.id}
