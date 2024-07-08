@@ -5,7 +5,7 @@ import { useLocalObservable } from "mobx-react-lite";
 import { createContext, useEffect, useMemo } from "react";
 import { createTailwind } from "./tailwind";
 import { createDocumentFactory } from "./tree-state";
-import { logValueTemporarily, parseDocument } from "./utils";
+import { logValueTemporarily, parseHtmlAndGetBody } from "./utils";
 import { sampleDocs } from "./sampleDocuments";
 
 function useEvent(name, handler) {
@@ -22,13 +22,26 @@ function findClassItem(classItems, ns, plugin) {
 
 export const StateContext = createContext();
 
+async function paste(state) {
+  const selectedNode = state.firstSelectedNode;
+  if (!selectedNode) return;
+  const text = await navigator.clipboard.readText();
+  if (!text) return;
+  const parsed = parseHtmlAndGetBody(text);
+  if (!parsed) return;
+  for (const element of parsed.children) {
+    var treeNode = state.documentFactory.makeTreeNodeFromHtmlNode(element);
+    selectedNode.appendChild(treeNode);
+  }
+}
+
 export function useEditorState(path) {
   const tw = useMemo(createTailwind);
 
   const state = useLocalObservable(() => {
     const sampleDocHtml = sampleDocs[path] ?? sampleDocs.tailwind;
 
-    const parsedInitialDoc = parseDocument(sampleDocHtml);
+    const parsedInitialDoc = parseHtmlAndGetBody(sampleDocHtml);
 
     const documentFactory = createDocumentFactory(tw.getClassModelForClass);
 
@@ -39,7 +52,9 @@ export function useEditorState(path) {
       characters: [],
       preferredPluginForNs: {},
       doc: initialStateDocument,
+      htmlRefs: undefined,
       docHtmlRef: undefined,
+      documentFactory,
 
       get firstSelectedNode() {
         const doc = this.doc;
@@ -119,8 +134,20 @@ export function useEditorState(path) {
   });
 
   useEvent("keydown", function (e) {
-    //console.info("key: ", e.key);
-    if (e.key === "q" || e.key === "Backspace") {
+    if (e.ctrlKey) {
+      if (e.key === "c") {
+        const refs = state.htmlRefs;
+        const selectedNode = state.firstSelectedNode;
+        if (refs && selectedNode) {
+          const element = refs[selectedNode.id];
+          if (element) {
+            navigator.clipboard.writeText(element.outerHTML);
+          }
+        }
+      } else if (e.key === "v") {
+        paste(state);
+      }
+    } else if (e.key === "q" || e.key === "Backspace") {
       if (state.characters.length > 0) {
         action(() => state.characters.pop())();
       }

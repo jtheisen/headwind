@@ -12,7 +12,9 @@ export function logValueTemporarily(value, name = "temp") {
   return value;
 }
 
-export function parseDocument(html) {
+export function parseHtmlAndGetBody(html) {
+  if (typeof html !== "string") throw Error("Expected a string to parse");
+
   const parser = new DOMParser();
 
   function wrapHtml5(content) {
@@ -25,10 +27,15 @@ export function parseDocument(html) {
     `;
   }
 
-  const doc = logValueTemporarily(
-    parser.parseFromString(wrapHtml5(html), "text/html"),
-    "initialdoc"
-  );
+  const doc = parser.parseFromString(wrapHtml5(html), "text/html");
 
-  return doc.getElementsByTagName("body")[0];
+  const bodies = doc.getElementsByTagName("body");
+
+  return bodies[0];
 }
+
+// export function parseHtmlAndGetBody(html) {
+//   const doc = parseDocument(html);
+
+//   return doc.getElementsByTagName("body");
+// }

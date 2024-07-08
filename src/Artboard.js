@@ -185,6 +185,19 @@ export const Artboard = observer(function Artboard() {
 
   const refs = useMemo(() => ({ count: ++refCount }), []);
 
+  useEffect(() => {
+    if (state.htmlRefs) {
+      console.error(
+        "Got multiple Artboards - only the first will be used for refs"
+      );
+      return;
+    }
+
+    state.htmlRefs = refs;
+
+    return () => (state.htmlRefs = undefined);
+  }, []);
+
   const selectionOverlayState = useLocalObservable(() => ({ renderCount: 0 }));
 
   const rerenderOverlay = action(() => {

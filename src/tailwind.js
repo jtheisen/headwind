@@ -87,8 +87,6 @@ const tailwindDiagnosticVariable = {
 
 window.tailwindDiagnosticVariable = tailwindDiagnosticVariable;
 
-console.info(tailwindDiagnosticVariable);
-
 //console.info(classToPluginMapping);
 
 export function createTailwind() {

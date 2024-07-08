@@ -76,11 +76,8 @@ export const TreeNode = types
       if (i < 0) throw Error(`Class not found`);
       self.classes.splice(i, 1);
     },
-    addChild() {
-      self.children.push({
-        id: "x",
-        isSelected: false,
-      });
+    appendChild(child) {
+      self.children.push(child);
     },
     setIsSelected(v) {
       self.isSelected = v;
@@ -114,7 +111,7 @@ export function createDocumentFactory(resolveClass) {
   }
 
   function makeDocumentStateFromNode(node) {
-    const root = makeTreeFromNode(node);
+    const root = makeTreeNodeFromHtmlNode(node);
     return makeDocumentStateFromTreeRoot(root, latestId);
   }
 
@@ -154,18 +151,18 @@ export function createDocumentFactory(resolveClass) {
     return result;
   }
 
-  function makeTreeFromNode(node) {
-    const result = makeTreeFromNodeTemplate(node);
+  function makeTreeNodeFromHtmlNode(node) {
+    const result = makeTreeNodeFromHtmlTemplate(node);
 
     if (!result) return undefined;
 
     return TreeNode.create(result);
   }
 
-  function makeTreeFromNodeTemplate(node) {
+  function makeTreeNodeFromHtmlTemplate(node) {
     switch (node.nodeType) {
       case Node.DOCUMENT_NODE:
-        return makeTreeFromNode(node.children[0]);
+        return makeTreeNodeFromHtmlNode(node.children[0]);
       case Node.ELEMENT_NODE:
         const style = node.attributes.style; // FIXME
         return {
@@ -179,7 +176,9 @@ export function createDocumentFactory(resolveClass) {
               .filter((a) => !["class", "style"].includes(a.name))
               .map((a) => [convertAttributeNameFromDomToReact(a.name), a.value])
           ),
-          children: [...node.childNodes].map(makeTreeFromNode).filter((n) => n),
+          children: [...node.childNodes]
+            .map(makeTreeNodeFromHtmlNode)
+            .filter((n) => n),
         };
       case Node.TEXT_NODE:
         if (!node.textContent || node.textContent.trim() === "")
@@ -197,5 +196,5 @@ export function createDocumentFactory(resolveClass) {
         };
     }
   }
-  return { makeDocumentStateFromNode };
+  return { makeDocumentStateFromNode, makeTreeNodeFromHtmlNode };
 }
