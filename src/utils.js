@@ -1,3 +1,7 @@
+export function Spacer() {
+  return <div style={{ flexGrow: 1 }} />;
+}
+
 function stringifyAndParse(o) {
   try {
     return JSON.parse(JSON.stringify(o));

@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonGroup,
+  Classes,
   SegmentedControl,
   Tree,
   TreeNode,
@@ -15,6 +16,7 @@ import { Allotment } from "allotment";
 import { Artboard } from "./Artboard";
 import { Properties } from "./Properties";
 import { SourceEditor } from "./SourceEditor";
+import { Spacer } from "./utils";
 
 const TestOutline = observer(function ({ node }) {
   return (
@@ -91,6 +93,7 @@ function TopBar({ state }) {
     >
       &nbsp;
       <KeyView state={state} />
+      <Spacer />
       <PluginSelector state={state} />
     </div>
   );
@@ -110,7 +113,7 @@ const PluginSelector = observer(function PluginSelector({ state }) {
 
 const KeyView = observer(function KeyView({ state }) {
   return (
-    <div>
+    <div className={Classes.MONOSPACE_TEXT}>
       <span className="font-bold">{state.charactersAsString}</span>
       <span className="font-bold opacity-50">{state.suffixToCandidateNs}</span>
     </div>
